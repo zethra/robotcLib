@@ -2,18 +2,24 @@
 #define SMALL_WHEEL 8.6394
 #define STANDERD_WHEEL 12.5664
 #define LARGE_WHEEL 15.7080
-void driveDistance(int distance, float wheel_circumference, short leftMotor, short rightMotor, short leftEncoder, short rightEncoder) {
+void driveDistance(int distance, float wheel_circumference, short leftMotor, short rightMotor) {
+	nMotorEncoder[leftMotor] = 0;
+	nMotorEncoder[rightMotor] = 0;
 	int distanceToTravel = (360 / wheel_circumference) * distance;
-	while(SensorValue(leftEncoder) < distanceToTravel) {
-		if(SensorValue(leftEncoder) == SensorValue(rightEncoder)) {
+	writeDebugStream("Sensor Value: %i Distance: %i\n", SensorValue(leftEncoder), distanceToTravel);
+	while(SensorValue(getEncoderForMotor(leftMotor)) > distanceToTravel) {
+		writeDebugStream("%i\n", SensorValue(leftEncoder));
+		if(SensorValue(getEncoderForMotor(leftMotor)) == SensorValue(getEncoderForMotor(rightMotor))) {
 			motor[leftMotor] = 127;
 			motor[rightMotor] = 127;
-		} else if(SensorValue(leftEncoder) > SensorValue(rightEncoder)) {
+		} else if(SensorValue(getEncoderForMotor(leftMotor)) > SensorValue(getEncoderForMotor(rightMotor))) {
 			motor[leftMotor] = 114;
 			motor[rightMotor] = 127;
-		} else if(SensorValue(leftEncoder) < SensorValue(rightEncoder)) {
+		} else if(SensorValue(getEncoderForMotor(leftMotor)) < SensorValue(getEncoderForMotor(rightMotor))) {
 			motor[leftMotor] = 127;
 			motor[rightMotor] = 114;
 		}
 	}
+	nMotorEncoder[leftMotor] = 0;
+	nMotorEncoder[rightMotor] = 0;
 }

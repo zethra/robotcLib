@@ -8,5 +8,5 @@
 #include "driveDistance.h"
 task main()
 {
-	driveDistance(10, STANDERD_WHEEL, leftMotor, rightMotor, leftEncoder, rightEncoder);
+	driveDistance(-12, SMALL_WHEEL, leftMotor, rightMotor);
 }
