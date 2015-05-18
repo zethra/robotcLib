@@ -6,9 +6,9 @@ void driveDistance(int distance, float wheel_circumference, short leftMotor, sho
 	nMotorEncoder[leftMotor] = 0;
 	nMotorEncoder[rightMotor] = 0;
 	int distanceToTravel = (360 / wheel_circumference) * distance;
-	writeDebugStream("Sensor Value: %i Distance: %i\n", SensorValue(leftEncoder), distanceToTravel);
+	writeDebugStreamLine("Sensor Value: %i Distance: %i\n", SensorValue(leftEncoder), distanceToTravel);
 	while(SensorValue(getEncoderForMotor(leftMotor)) > distanceToTravel) {
-		writeDebugStream("%i\n", SensorValue(leftEncoder));
+		writeDebugStreamLine("Left Encoder:%i - Right Encoder:%i", SensorValue(getEncoderForMotor(leftMotor)), SensorValue(getEncoderForMotor(rightMotor)));
 		if(SensorValue(getEncoderForMotor(leftMotor)) == SensorValue(getEncoderForMotor(rightMotor))) {
 			motor[leftMotor] = 127;
 			motor[rightMotor] = 127;
