@@ -14,5 +14,5 @@
 #include "driveDistance.h"
 task main()
 {
-	//driveDistance(-12, SMALL_WHEEL, leftMotor, rightMotor);
+	driveDistance(-60, SMALL_WHEEL, leftMotor, rightMotor);
 }
