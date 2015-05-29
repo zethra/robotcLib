@@ -1,4 +1,5 @@
 #pragma config(I2C_Usage, I2C1, i2cSensors)
+#pragma config(Sensor, dgtl1,  ,               sensorTouch)
 #pragma config(Sensor, dgtl2,  armLimit,       sensorTouch)
 #pragma config(Sensor, dgtl3,  sonar,          sensorSONAR_cm)
 #pragma config(Sensor, I2C_1,  ,               sensorQuadEncoderOnI2CPort,    , AutoAssign)
@@ -83,5 +84,23 @@ void postTeleop() {
 task main() {
 	//twoStage();
 	//writeDebugStreamLine("Staringing");
-	while(
+	while(true) {
+		if(SensorValue(sonar) > 14 || SensorValue(sonar) < 0) {
+			motor[leftMotor] = 50;
+			motor[rightMotor] = 50;
+		} else {
+			motor[leftMotor] = 0;
+			motor[rightMotor] = 0;
+			break;
+		}
+	}
+	motor[armMotor] = 25;
+	wait10Msec(50);
+	motor[armMotor] = 0;
+	while(SensorValue(dgtl1) == 0) {
+		motor[leftMotor] = -50;
+		motor[rightMotor] = -50;
+	}
+	motor[leftMotor] = 0;
+	motor[rightMotor] = 0;
 }
