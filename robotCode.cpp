@@ -13,9 +13,43 @@
 
 bool driveState = false;
 bool pressed = false;
+bool run = false;
+bool sp = false;
 int X = 0, Y = 0, L = 0, R = 0, threshold = 15;
+float speed = 1;
 
 void auton() {
+	if(!run) {
+		while(true) {
+			if(SensorValue(sonar) > 14 || SensorValue(sonar) < 0) {
+				motor[leftMotor] = 50;
+				motor[rightMotor] = 50;
+			} else {
+				motor[leftMotor] = 0;
+				motor[rightMotor] = 0;
+				break;
+			}
+		}
+		motor[armMotor] = 25;
+		wait10Msec(50);
+		motor[armMotor] = 0;
+		while(SensorValue(dgtl1) == 0) {
+			motor[leftMotor] = -50;
+			motor[rightMotor] = -50;
+		}
+		motor[leftMotor] = 0;
+		motor[rightMotor] = 0;
+		run = true;
+	}
+}
+
+void postAuton() {
+	motor[leftMotor] = 0;
+	motor[rightMotor] = 0;
+	motor[armMotor] = 0;
+}
+
+void teleop() {
 	if(vexRT[Btn7D] == 1 && !pressed) {
 			driveState = !driveState;
 			writeDebugStreamLine("Switching");
@@ -25,11 +59,11 @@ void auton() {
 		}
 		if(driveState) {
 			if(abs(vexRT[Ch3]) > threshold)
-				Y = vexRT[Ch3];
+				Y = vexRT[Ch3]  * speed;
 			else
 				Y = 0;
 			if(abs(vexRT[Ch4]) > threshold)
-				X = vexRT[Ch4];
+				X = vexRT[Ch4]  * speed;
 			else
 				X = 0;
 			motor[leftMotor] = Y + X;
@@ -37,11 +71,11 @@ void auton() {
 			writeDebugStreamLine("Joystick");
 		} else {
 			if(abs(vexRT[Ch3]) > threshold)
-				L = vexRT[Ch3];
+				L = vexRT[Ch3] * speed;
 			else
 				L = 0;
 			if(abs(vexRT[Ch2]) > threshold)
-				R = vexRT[Ch2];
+				R = vexRT[Ch2] * speed;
 			else
 				R = 0;
 			if(L > 0 && R > 0 || L < 0 && R < 0) {
@@ -60,16 +94,23 @@ void auton() {
 		} else {
 			motor[armMotor] = 0;
 		}
-}
-
-void postAuton() {
-	motor[leftMotor] = 0;
-	motor[rightMotor] = 0;
-	motor[armMotor] = 0;
-}
-
-void teleop() {
-
+		if(!sp) {
+			if(vexRT[Btn5U] == 1) {
+				if(speed < 1) {
+					speed += 0.1;
+					sp = true;
+				}
+			}
+			if(vexRT[Btn5D] == 1) {
+				if(speed > 0.1) {
+					speed -= 0.1;
+					sp = true;
+				}
+			}
+		}
+		if(vexRT[Btn5U] == 0 && vexRT[Btn5D] == 0) {
+			sp = false;
+		}
 }
 
 void postTeleop() {
@@ -82,8 +123,9 @@ void postTeleop() {
 //Do not edit code bellow this point!
 #include "twoStage.h"
 task main() {
-	//twoStage();
+	twoStage();
 	//writeDebugStreamLine("Staringing");
+/*
 	while(true) {
 		if(SensorValue(sonar) > 14 || SensorValue(sonar) < 0) {
 			motor[leftMotor] = 50;
@@ -103,4 +145,5 @@ task main() {
 	}
 	motor[leftMotor] = 0;
 	motor[rightMotor] = 0;
+	*/
 }
