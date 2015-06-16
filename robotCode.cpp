@@ -19,8 +19,10 @@ int X = 0, Y = 0, L = 0, R = 0, threshold = 15;
 float speed = 1;
 
 void auton() {
+	//Run once
 	if(!run) {
 		while(true) {
+			//Go foward until there is an object 14cm away
 			if(SensorValue(sonar) > 14 || SensorValue(sonar) < 0) {
 				motor[leftMotor] = 50;
 				motor[rightMotor] = 50;
@@ -30,9 +32,11 @@ void auton() {
 				break;
 			}
 		}
+		//Pick up the ball
 		motor[armMotor] = 25;
 		wait10Msec(50);
 		motor[armMotor] = 0;
+		//Go backward until the button on the back is pressed
 		while(SensorValue(dgtl1) == 0) {
 			motor[leftMotor] = -50;
 			motor[rightMotor] = -50;
@@ -44,76 +48,86 @@ void auton() {
 }
 
 void postAuton() {
+	//stop motors
 	motor[leftMotor] = 0;
 	motor[rightMotor] = 0;
 	motor[armMotor] = 0;
 }
 
 void teleop() {
+	//If button 7D is pressed switch drive modes between two stick and one stick
 	if(vexRT[Btn7D] == 1 && !pressed) {
-			driveState = !driveState;
-			writeDebugStreamLine("Switching");
-			pressed = true;
-		} else if (vexRT[Btn7D] == 0 && pressed) {
-			pressed =false;
-		}
-		if(driveState) {
-			if(abs(vexRT[Ch3]) > threshold)
-				Y = vexRT[Ch3]  * speed;
-			else
-				Y = 0;
-			if(abs(vexRT[Ch4]) > threshold)
-				X = vexRT[Ch4]  * speed;
-			else
-				X = 0;
-			motor[leftMotor] = Y + X;
-			motor[rightMotor] = Y - X;
-			writeDebugStreamLine("Joystick");
+		driveState = !driveState;
+		writeDebugStreamLine("Switching");
+		pressed = true;
+	} else if (vexRT[Btn7D] == 0 && pressed) {
+		pressed =false;
+	}
+	
+	if(driveState) {
+		//One stick control
+		if(abs(vexRT[Ch3]) > threshold)
+			Y = vexRT[Ch3]  * speed;
+		else
+			Y = 0;
+		if(abs(vexRT[Ch4]) > threshold)
+			X = vexRT[Ch4]  * speed;
+		else
+			X = 0;
+		motor[leftMotor] = Y + X;
+		motor[rightMotor] = Y - X;
+		writeDebugStreamLine("Joystick");
+	} else {
+		//Two stick control
+		if(abs(vexRT[Ch3]) > threshold)
+			L = vexRT[Ch3] * speed;
+		else
+			L = 0;
+		if(abs(vexRT[Ch2]) > threshold)
+			R = vexRT[Ch2] * speed;
+		else
+			R = 0;
+		if(L > 0 && R > 0 || L < 0 && R < 0) {
+			motor[leftMotor] = L;
+			motor[rightMotor] = R;
 		} else {
-			if(abs(vexRT[Ch3]) > threshold)
-				L = vexRT[Ch3] * speed;
-			else
-				L = 0;
-			if(abs(vexRT[Ch2]) > threshold)
-				R = vexRT[Ch2] * speed;
-			else
-				R = 0;
-			if(L > 0 && R > 0 || L < 0 && R < 0) {
-				motor[leftMotor] = L;
-				motor[rightMotor] = R;
-			} else {
-				motor[leftMotor] = L * 0.6;
-				motor[rightMotor] = R * 0.6;
-			}
-			writeDebugStreamLine("Tank");
+			motor[leftMotor] = L * 0.6;
+			motor[rightMotor] = R * 0.6;
 		}
-		if(vexRT[Btn6U] == 1) {
-			motor[armMotor] = 25;
-		} else if(vexRT[Btn6D] == 1 && SensorValue(armLimit) == 0) {
-			motor[armMotor] = -15;
-		} else {
-			motor[armMotor] = 0;
-		}
-		if(!sp) {
-			if(vexRT[Btn5U] == 1) {
-				if(speed < 1) {
-					speed += 0.1;
-					sp = true;
-				}
-			}
-			if(vexRT[Btn5D] == 1) {
-				if(speed > 0.1) {
-					speed -= 0.1;
-					sp = true;
-				}
+		writeDebugStreamLine("Tank");
+	}
+	
+	//Arm contol with limit switch
+	if(vexRT[Btn6U] == 1) {
+		motor[armMotor] = 25;
+	} else if(vexRT[Btn6D] == 1 && SensorValue(armLimit) == 0) {
+		motor[armMotor] = -15;
+	} else {
+		motor[armMotor] = 0;
+	}
+	
+	//Speed changing
+	if(!sp) {
+		if(vexRT[Btn5U] == 1) {
+			if(speed < 1) {
+				speed += 0.1;
+				sp = true;
 			}
 		}
-		if(vexRT[Btn5U] == 0 && vexRT[Btn5D] == 0) {
-			sp = false;
+		if(vexRT[Btn5D] == 1) {
+			if(speed > 0.1) {
+				speed -= 0.1;
+				sp = true;
+			}
 		}
+	}
+	if(vexRT[Btn5U] == 0 && vexRT[Btn5D] == 0) {
+		sp = false;
+	}
 }
 
 void postTeleop() {
+	//Stop motors
 	motor[leftMotor] = 0;
 	motor[rightMotor] = 0;
 	motor[armMotor] = 0;
@@ -124,26 +138,4 @@ void postTeleop() {
 #include "twoStage.h"
 task main() {
 	twoStage();
-	//writeDebugStreamLine("Staringing");
-/*
-	while(true) {
-		if(SensorValue(sonar) > 14 || SensorValue(sonar) < 0) {
-			motor[leftMotor] = 50;
-			motor[rightMotor] = 50;
-		} else {
-			motor[leftMotor] = 0;
-			motor[rightMotor] = 0;
-			break;
-		}
-	}
-	motor[armMotor] = 25;
-	wait10Msec(50);
-	motor[armMotor] = 0;
-	while(SensorValue(dgtl1) == 0) {
-		motor[leftMotor] = -50;
-		motor[rightMotor] = -50;
-	}
-	motor[leftMotor] = 0;
-	motor[rightMotor] = 0;
-	*/
 }
